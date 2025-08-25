@@ -7,4 +7,4 @@ printf "Please input sudo password to proceed.\n"
 
 # printf "\n"
 
-echo $sudopass | sudo -E $CLI_LOCATION/decky plugin build $(pwd) --engine podman
+echo $sudopass | sudo -E $CLI_LOCATION/decky plugin build $(pwd) --engine docker

@@ -1,13 +1,20 @@
-import {useEffect, useState} from "react";
-import {FaClipboardList} from "react-icons/fa";
-import remarkHtml from "remark-html"
-import remarkParse from "remark-parse"
-import remarkGfm from "remark-gfm"
-import {unified} from "unified"
-import {patchPartnerEventStore} from "./PartnerEventStorePatch";
-import {staticClasses} from "@decky/ui";
-import {definePlugin} from "@decky/api"
-import {fetchReleases} from "./FetchReleases";
+import { useEffect, useState } from "react";
+import { FaClipboardList } from "react-icons/fa";
+import remarkHtml from "remark-html";
+import remarkParse from "remark-parse";
+import remarkGfm from "remark-gfm";
+import { unified } from "unified";
+import { patchPartnerEventStore } from "./PartnerEventStorePatch";
+import {
+  staticClasses,
+  PanelSection,
+  PanelSectionRow,
+  ButtonItem,
+  Field,
+  SteamSpinner,
+} from "@decky/ui";
+import { definePlugin } from "@decky/api";
+import { fetchReleases } from "./FetchReleases";
 
 function Content() {
   const [changelogHtml, setChangelogHtml] = useState<string | null>(null);
@@ -64,33 +71,10 @@ function Content() {
   };
 
   return (
-    <div
-      style={{
-        padding: "10px",
-        width: "100%",
-        maxWidth: "800px", // Limit the width
-        margin: "0 auto", // Center the container
-        height: "100%",
-        overflowY: "auto",
-        backgroundColor: "#121212",
-        color: "#ffffff",
-        fontFamily: "Arial, sans-serif",
-        wordWrap: "break-word", // Break long words
-        overflowX: "hidden", // Prevent horizontal scrolling
-      }}
-    >
-      <h2>Bazzite Release Notes</h2>
-      <div style={{display: "flex", gap: "10px", marginBottom: "15px"}}>
-        <button
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#0078D7",
-            color: "#ffffff",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer",
-            fontSize: "16px",
-          }}
+    <PanelSection title="Bazzite Release Notes">
+      <PanelSectionRow>
+        <ButtonItem
+          layout="below"
           onClick={() =>
             window.open(
               "https://github.com/ublue-os/bazzite/releases",
@@ -99,81 +83,111 @@ function Content() {
           }
         >
           View All Release Notes
-        </button>
-        <button
-          style={{
-            padding: "10px 20px",
-            backgroundColor: isRefreshing ? "#CCCCCC" : "#28A745",
-            color: "#ffffff",
-            border: "none",
-            borderRadius: "5px",
-            cursor: isRefreshing ? "not-allowed" : "pointer",
-            fontSize: "16px",
-          }}
-          onClick={refreshChangelog}
+        </ButtonItem>
+      </PanelSectionRow>
+      <PanelSectionRow>
+        <ButtonItem
+          layout="below"
           disabled={isRefreshing}
+          onClick={refreshChangelog}
         >
           {isRefreshing ? "Refreshing..." : "Refresh"}
-        </button>
-      </div>
-      {error ? (
-        <p style={{color: "red"}} aria-live="polite">
-          {error}
-        </p>
-      ) : changelogHtml ? (
-        <div
-          style={{
-            backgroundColor: "#1e1e1e",
-            padding: "10px",
-            borderRadius: "5px",
-            color: "#ffffff",
-            fontFamily: "Arial, sans-serif",
-            fontSize: "14px",
-            lineHeight: "1.6",
-            wordWrap: "break-word", // Prevent long text from overflowing
-          }}
-        >
-          <style>
-            {`
-              h1, h2, h3 {
-                color: #61dafb;
-                margin: 0 0 10px;
-              }
-              p {
-                margin: 0 0 10px;
-              }
-              ul, ol {
-                margin: 10px 0 10px 20px;
-              }
-              li {
-                margin: 5px 0;
-              }
-              pre {
-                background-color: #282c34;
-                padding: 10px;
-                border-radius: 5px;
-                overflow-x: auto;
-                color: #dcdcdc;
-              }
-              a {
-                color: #61dafb;
-                text-decoration: none;
-              }
-              a:hover {
-                text-decoration: underline;
-              }
-            `}
-          </style>
-          <div
-            dangerouslySetInnerHTML={{
-              __html: changelogHtml,
-            }}
-          ></div>
-        </div>
-      ) : (
-        <p aria-live="polite">Loading...</p>
-      )}
-    </div>
+        </ButtonItem>
+      </PanelSectionRow>
+      <PanelSectionRow>
+        {error ? (
+          <Field label="Error">{error}</Field>
+        ) : changelogHtml ? (
+          <Field>
+            <div
+              style={{
+                width: "100%",
+                maxWidth: "100%",
+                overflow: "hidden",
+                wordWrap: "break-word",
+                overflowWrap: "break-word",
+                hyphens: "auto",
+                fontSize: "13px",
+                lineHeight: "1.4",
+                color: "#dcdedf"
+              }}
+              dangerouslySetInnerHTML={{
+                __html: `<style>
+                  * {
+                    max-width: 100% !important;
+                    word-wrap: break-word !important;
+                    overflow-wrap: break-word !important;
+                    box-sizing: border-box !important;
+                  }
+                  h1, h2, h3, h4, h5, h6 {
+                    font-size: 14px !important;
+                    color: #67a3ff !important;
+                    margin: 8px 0 4px 0 !important;
+                    font-weight: bold !important;
+                  }
+                  p {
+                    margin: 4px 0 !important;
+                    font-size: 13px !important;
+                    line-height: 1.4 !important;
+                  }
+                  ul, ol {
+                    margin: 4px 0 !important;
+                    padding-left: 16px !important;
+                  }
+                  li {
+                    margin: 2px 0 !important;
+                    font-size: 13px !important;
+                  }
+                  code {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    padding: 2px 4px !important;
+                    border-radius: 3px !important;
+                    font-size: 12px !important;
+                    word-break: break-all !important;
+                  }
+                  pre {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    padding: 8px !important;
+                    border-radius: 4px !important;
+                    overflow-x: auto !important;
+                    font-size: 12px !important;
+                    white-space: pre-wrap !important;
+                    word-break: break-all !important;
+                  }
+                  a {
+                    color: #67a3ff !important;
+                    text-decoration: underline !important;
+                  }
+                  blockquote {
+                    border-left: 3px solid #67a3ff !important;
+                    padding-left: 8px !important;
+                    margin: 4px 0 !important;
+                    opacity: 0.8 !important;
+                  }
+                  table {
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    border-collapse: collapse !important;
+                    font-size: 12px !important;
+                  }
+                  td, th {
+                    padding: 4px !important;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    word-break: break-word !important;
+                  }
+                  img {
+                    max-width: 100% !important;
+                    height: auto !important;
+                  }
+                </style>${changelogHtml}`,
+              }}
+            />
+          </Field>
+        ) : (
+          <SteamSpinner />
+        )}
+      </PanelSectionRow>
+    </PanelSection>
   );
 }
 
