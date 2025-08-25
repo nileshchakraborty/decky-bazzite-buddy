@@ -100,8 +100,86 @@ function Content() {
         ) : changelogHtml ? (
           <Field>
             <div
+              style={{
+                width: "100%",
+                maxWidth: "100%",
+                overflow: "hidden",
+                wordWrap: "break-word",
+                overflowWrap: "break-word",
+                hyphens: "auto",
+                fontSize: "13px",
+                lineHeight: "1.4",
+                color: "#dcdedf"
+              }}
               dangerouslySetInnerHTML={{
-                __html: changelogHtml,
+                __html: `<style>
+                  * {
+                    max-width: 100% !important;
+                    word-wrap: break-word !important;
+                    overflow-wrap: break-word !important;
+                    box-sizing: border-box !important;
+                  }
+                  h1, h2, h3, h4, h5, h6 {
+                    font-size: 14px !important;
+                    color: #67a3ff !important;
+                    margin: 8px 0 4px 0 !important;
+                    font-weight: bold !important;
+                  }
+                  p {
+                    margin: 4px 0 !important;
+                    font-size: 13px !important;
+                    line-height: 1.4 !important;
+                  }
+                  ul, ol {
+                    margin: 4px 0 !important;
+                    padding-left: 16px !important;
+                  }
+                  li {
+                    margin: 2px 0 !important;
+                    font-size: 13px !important;
+                  }
+                  code {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    padding: 2px 4px !important;
+                    border-radius: 3px !important;
+                    font-size: 12px !important;
+                    word-break: break-all !important;
+                  }
+                  pre {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    padding: 8px !important;
+                    border-radius: 4px !important;
+                    overflow-x: auto !important;
+                    font-size: 12px !important;
+                    white-space: pre-wrap !important;
+                    word-break: break-all !important;
+                  }
+                  a {
+                    color: #67a3ff !important;
+                    text-decoration: underline !important;
+                  }
+                  blockquote {
+                    border-left: 3px solid #67a3ff !important;
+                    padding-left: 8px !important;
+                    margin: 4px 0 !important;
+                    opacity: 0.8 !important;
+                  }
+                  table {
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    border-collapse: collapse !important;
+                    font-size: 12px !important;
+                  }
+                  td, th {
+                    padding: 4px !important;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    word-break: break-word !important;
+                  }
+                  img {
+                    max-width: 100% !important;
+                    height: auto !important;
+                  }
+                </style>${changelogHtml}`,
               }}
             />
           </Field>
