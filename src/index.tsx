@@ -10,11 +10,107 @@ import {
   PanelSection,
   PanelSectionRow,
   ButtonItem,
+  ConfirmModal,
   Field,
+  showModal,
   SteamSpinner,
 } from "@decky/ui";
-import { definePlugin } from "@decky/api";
+import { callable, definePlugin, toaster } from "@decky/api";
 import { fetchReleases } from "./FetchReleases";
+
+type WindowsBootTarget = {
+  available: boolean;
+  error?: string;
+};
+
+type RebootResult = {
+  ok: boolean;
+  error?: string;
+};
+
+const getWindowsBootTarget = callable<[], WindowsBootTarget>(
+  "get_windows_boot_target"
+);
+const rebootToWindows = callable<[], RebootResult>("reboot_to_windows");
+
+function PowerSection() {
+  const [bootTarget, setBootTarget] = useState<WindowsBootTarget | null>(null);
+  const [isRestarting, setIsRestarting] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    getWindowsBootTarget()
+      .then((target) => {
+        if (mounted) setBootTarget(target);
+      })
+      .catch(() => {
+        if (mounted) setBootTarget({ available: false });
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (!bootTarget?.available) return null;
+
+  const restartToWindows = async () => {
+    setIsRestarting(true);
+
+    try {
+      const result = await rebootToWindows();
+      if (!result.ok) {
+        toaster.toast({
+          title: "Could not restart to Windows",
+          body: result.error ?? "An unknown error occurred.",
+          critical: true,
+          duration: 8000,
+        });
+      }
+    } catch (error) {
+      toaster.toast({
+        title: "Could not restart to Windows",
+        body: error instanceof Error ? error.message : "An unknown error occurred.",
+        critical: true,
+        duration: 8000,
+      });
+    } finally {
+      setIsRestarting(false);
+    }
+  };
+
+  const confirmRestart = () => {
+    showModal(
+      <ConfirmModal
+        strTitle="Restart to Windows?"
+        strDescription={
+          "This will close your current session and use Windows for the next boot only."
+        }
+        strOKButtonText="Restart"
+        strCancelButtonText="Cancel"
+        bDestructiveWarning
+        onOK={() => void restartToWindows()}
+      />
+    );
+  };
+
+  return (
+    <PanelSection title="Power">
+      <PanelSectionRow>
+        <ButtonItem
+          layout="below"
+          label="Restart to Windows"
+          description="Use Windows for the next boot, then return to the normal boot order."
+          disabled={isRestarting}
+          onClick={confirmRestart}
+        >
+          {isRestarting ? "Restarting..." : "Restart"}
+        </ButtonItem>
+      </PanelSectionRow>
+    </PanelSection>
+  );
+}
 
 function Content() {
   const [changelogHtml, setChangelogHtml] = useState<string | null>(null);
@@ -191,6 +287,15 @@ function Content() {
   );
 }
 
+function PluginContent() {
+  return (
+    <>
+      <PowerSection />
+      <Content />
+    </>
+  );
+}
+
 // noinspection JSUnusedGlobalSymbols
 export default definePlugin(() => {
   const patches = patchPartnerEventStore();
@@ -199,7 +304,7 @@ export default definePlugin(() => {
     name: "Bazzite Changelog Viewer",
     title: <div className={staticClasses.Title}>Bazzite Buddy</div>,
     icon: <FaClipboardList/>,
-    content: <Content/>,
+    content: <PluginContent/>,
     onDismount() {
       patches.forEach(patch => {
         patch.unpatch();
