@@ -3,8 +3,6 @@ import subprocess
 from collections.abc import Sequence
 
 
-EFIBOOTMGR = "/usr/sbin/efibootmgr"
-SYSTEMCTL = "/usr/bin/systemctl"
 COMMAND_TIMEOUT_SECONDS = 10
 WINDOWS_BOOT_ENTRY = re.compile(
     r"^Boot([0-9A-Fa-f]{4})\*?\s+Windows Boot Manager(?:\t.*)?\s*$"
@@ -37,7 +35,7 @@ def command_error(result: subprocess.CompletedProcess[str], fallback: str) -> st
 
 def detect_windows_boot_target() -> tuple[str | None, str | None]:
     try:
-        result = run_command([EFIBOOTMGR])
+        result = run_command(["efibootmgr"])
     except (OSError, subprocess.SubprocessError) as error:
         return None, f"Unable to inspect EFI boot entries: {error}"
 
@@ -52,7 +50,7 @@ def detect_windows_boot_target() -> tuple[str | None, str | None]:
 
 def clear_boot_next() -> bool:
     try:
-        return run_command([EFIBOOTMGR, "-N"]).returncode == 0
+        return run_command(["efibootmgr", "-N"]).returncode == 0
     except (OSError, subprocess.SubprocessError):
         return False
 
@@ -82,7 +80,7 @@ class Plugin:
             return {"ok": False, "error": error or "Unknown error"}
 
         try:
-            boot_next = run_command([EFIBOOTMGR, "-n", target])
+            boot_next = run_command(["efibootmgr", "-n", target])
         except (OSError, subprocess.SubprocessError) as command_failure:
             return {
                 "ok": False,
@@ -98,7 +96,7 @@ class Plugin:
             }
 
         try:
-            reboot = run_command([SYSTEMCTL, "--no-block", "reboot"])
+            reboot = run_command(["systemctl", "--no-block", "reboot"])
         except (OSError, subprocess.SubprocessError) as command_failure:
             # Do not leave a surprising Windows BootNext behind after a failed reboot.
             cleared = clear_boot_next()

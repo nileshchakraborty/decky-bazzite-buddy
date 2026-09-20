@@ -17,6 +17,7 @@ import {
 } from "@decky/ui";
 import { callable, definePlugin, toaster } from "@decky/api";
 import { fetchReleases } from "./FetchReleases";
+import { createReleasePreview } from "./releasePreview";
 
 type WindowsBootTarget = {
   available: boolean;
@@ -131,7 +132,7 @@ function Content() {
         .use(remarkParse)
         .use(remarkGfm)
         .use(remarkHtml)
-        .process(iterator.value.body);
+        .process(createReleasePreview(iterator.value.body));
 
       setChangelogHtml(html.value as string);
       setError(null);
@@ -195,7 +196,83 @@ function Content() {
           <Field label="Error">{error}</Field>
         ) : changelogHtml ? (
           <Field>
+            <style>{`
+                  .bazzite-buddy-release-notes * {
+                    max-width: 100% !important;
+                    word-wrap: break-word !important;
+                    overflow-wrap: break-word !important;
+                    box-sizing: border-box !important;
+                  }
+                  .bazzite-buddy-release-notes h1,
+                  .bazzite-buddy-release-notes h2,
+                  .bazzite-buddy-release-notes h3,
+                  .bazzite-buddy-release-notes h4,
+                  .bazzite-buddy-release-notes h5,
+                  .bazzite-buddy-release-notes h6 {
+                    font-size: 14px !important;
+                    color: #67a3ff !important;
+                    margin: 8px 0 4px 0 !important;
+                    font-weight: bold !important;
+                  }
+                  .bazzite-buddy-release-notes p {
+                    margin: 4px 0 !important;
+                    font-size: 13px !important;
+                    line-height: 1.4 !important;
+                  }
+                  .bazzite-buddy-release-notes ul,
+                  .bazzite-buddy-release-notes ol {
+                    margin: 4px 0 !important;
+                    padding-left: 16px !important;
+                  }
+                  .bazzite-buddy-release-notes li {
+                    margin: 2px 0 !important;
+                    font-size: 13px !important;
+                  }
+                  .bazzite-buddy-release-notes code {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    padding: 2px 4px !important;
+                    border-radius: 3px !important;
+                    font-size: 12px !important;
+                    word-break: break-all !important;
+                  }
+                  .bazzite-buddy-release-notes pre {
+                    background: rgba(255, 255, 255, 0.1) !important;
+                    padding: 8px !important;
+                    border-radius: 4px !important;
+                    overflow-x: auto !important;
+                    font-size: 12px !important;
+                    white-space: pre-wrap !important;
+                    word-break: break-all !important;
+                  }
+                  .bazzite-buddy-release-notes a {
+                    color: #67a3ff !important;
+                    text-decoration: underline !important;
+                  }
+                  .bazzite-buddy-release-notes blockquote {
+                    border-left: 3px solid #67a3ff !important;
+                    padding-left: 8px !important;
+                    margin: 4px 0 !important;
+                    opacity: 0.8 !important;
+                  }
+                  .bazzite-buddy-release-notes table {
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    border-collapse: collapse !important;
+                    font-size: 12px !important;
+                  }
+                  .bazzite-buddy-release-notes td,
+                  .bazzite-buddy-release-notes th {
+                    padding: 4px !important;
+                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+                    word-break: break-word !important;
+                  }
+                  .bazzite-buddy-release-notes img {
+                    max-width: 100% !important;
+                    height: auto !important;
+                  }
+                `}</style>
             <div
+              className="bazzite-buddy-release-notes"
               style={{
                 width: "100%",
                 maxWidth: "100%",
@@ -208,74 +285,7 @@ function Content() {
                 color: "#dcdedf"
               }}
               dangerouslySetInnerHTML={{
-                __html: `<style>
-                  * {
-                    max-width: 100% !important;
-                    word-wrap: break-word !important;
-                    overflow-wrap: break-word !important;
-                    box-sizing: border-box !important;
-                  }
-                  h1, h2, h3, h4, h5, h6 {
-                    font-size: 14px !important;
-                    color: #67a3ff !important;
-                    margin: 8px 0 4px 0 !important;
-                    font-weight: bold !important;
-                  }
-                  p {
-                    margin: 4px 0 !important;
-                    font-size: 13px !important;
-                    line-height: 1.4 !important;
-                  }
-                  ul, ol {
-                    margin: 4px 0 !important;
-                    padding-left: 16px !important;
-                  }
-                  li {
-                    margin: 2px 0 !important;
-                    font-size: 13px !important;
-                  }
-                  code {
-                    background: rgba(255, 255, 255, 0.1) !important;
-                    padding: 2px 4px !important;
-                    border-radius: 3px !important;
-                    font-size: 12px !important;
-                    word-break: break-all !important;
-                  }
-                  pre {
-                    background: rgba(255, 255, 255, 0.1) !important;
-                    padding: 8px !important;
-                    border-radius: 4px !important;
-                    overflow-x: auto !important;
-                    font-size: 12px !important;
-                    white-space: pre-wrap !important;
-                    word-break: break-all !important;
-                  }
-                  a {
-                    color: #67a3ff !important;
-                    text-decoration: underline !important;
-                  }
-                  blockquote {
-                    border-left: 3px solid #67a3ff !important;
-                    padding-left: 8px !important;
-                    margin: 4px 0 !important;
-                    opacity: 0.8 !important;
-                  }
-                  table {
-                    width: 100% !important;
-                    max-width: 100% !important;
-                    border-collapse: collapse !important;
-                    font-size: 12px !important;
-                  }
-                  td, th {
-                    padding: 4px !important;
-                    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-                    word-break: break-word !important;
-                  }
-                  img {
-                    max-width: 100% !important;
-                    height: auto !important;
-                  }
-                </style>${changelogHtml}`,
+                __html: changelogHtml,
               }}
             />
           </Field>

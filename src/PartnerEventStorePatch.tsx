@@ -1,5 +1,4 @@
-import {findModuleExport, Patch} from "@decky/ui";
-import {replacePatch} from "decky-frontend-lib";
+import {findModuleExport, Patch, replacePatch} from "@decky/ui";
 import remarkHtml from "remark-html"
 import remarkParse from "remark-parse"
 import remarkGfm from "remark-gfm"

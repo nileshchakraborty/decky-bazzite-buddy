@@ -13,10 +13,10 @@ class ParseWindowsBootTargetTests(unittest.TestCase):
     def test_parses_active_windows_entry(self):
         output = """BootCurrent: 0001
 Boot0001* Bazzite
-Boot0003* Windows Boot Manager\tHD(1,GPT,...)
+Boot00AF* Windows Boot Manager\tHD(1,GPT,...)
 """
 
-        self.assertEqual(main.parse_windows_boot_target(output), "0003")
+        self.assertEqual(main.parse_windows_boot_target(output), "00AF")
 
     def test_parses_inactive_windows_entry(self):
         self.assertEqual(
@@ -26,7 +26,7 @@ Boot0003* Windows Boot Manager\tHD(1,GPT,...)
 
     def test_rejects_similar_entry_names(self):
         self.assertIsNone(
-            main.parse_windows_boot_target("Boot0003* Windows Boot Manager Backup\n")
+            main.parse_windows_boot_target("Boot00AF* Windows Boot Manager Backup\n")
         )
 
     def test_detection_reports_efibootmgr_failure(self):
@@ -48,7 +48,7 @@ Boot0003* Windows Boot Manager\tHD(1,GPT,...)
 class RebootToWindowsTests(unittest.IsolatedAsyncioTestCase):
     async def test_availability_does_not_expose_boot_number(self):
         plugin = main.Plugin()
-        with patch.object(main, "detect_windows_boot_target", return_value=("0003", None)):
+        with patch.object(main, "detect_windows_boot_target", return_value=("00AF", None)):
             self.assertEqual(
                 await plugin.get_windows_boot_target(), {"available": True}
             )
@@ -56,7 +56,7 @@ class RebootToWindowsTests(unittest.IsolatedAsyncioTestCase):
     async def test_does_not_reboot_when_bootnext_fails(self):
         plugin = main.Plugin()
         with (
-            patch.object(main, "detect_windows_boot_target", return_value=("0003", None)),
+            patch.object(main, "detect_windows_boot_target", return_value=("00AF", None)),
             patch.object(
                 main,
                 "run_command",
@@ -67,12 +67,12 @@ class RebootToWindowsTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertFalse(response["ok"])
         self.assertIn("permission denied", response["error"])
-        run.assert_called_once_with([main.EFIBOOTMGR, "-n", "0003"])
+        run.assert_called_once_with(["efibootmgr", "-n", "00AF"])
 
     async def test_clears_bootnext_when_reboot_fails(self):
         plugin = main.Plugin()
         with (
-            patch.object(main, "detect_windows_boot_target", return_value=("0003", None)),
+            patch.object(main, "detect_windows_boot_target", return_value=("00AF", None)),
             patch.object(
                 main,
                 "run_command",
@@ -89,8 +89,8 @@ class RebootToWindowsTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             [call.args[0] for call in run.call_args_list],
             [
-                [main.EFIBOOTMGR, "-n", "0003"],
-                [main.SYSTEMCTL, "--no-block", "reboot"],
+                ["efibootmgr", "-n", "00AF"],
+                ["systemctl", "--no-block", "reboot"],
             ],
         )
         clear.assert_called_once_with()
@@ -98,7 +98,7 @@ class RebootToWindowsTests(unittest.IsolatedAsyncioTestCase):
     async def test_reboots_only_after_setting_bootnext(self):
         plugin = main.Plugin()
         with (
-            patch.object(main, "detect_windows_boot_target", return_value=("0003", None)),
+            patch.object(main, "detect_windows_boot_target", return_value=("00AF", None)),
             patch.object(main, "run_command", side_effect=[result(), result()]) as run,
         ):
             response = await plugin.reboot_to_windows()
@@ -107,8 +107,8 @@ class RebootToWindowsTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             [call.args[0] for call in run.call_args_list],
             [
-                [main.EFIBOOTMGR, "-n", "0003"],
-                [main.SYSTEMCTL, "--no-block", "reboot"],
+                ["efibootmgr", "-n", "00AF"],
+                ["systemctl", "--no-block", "reboot"],
             ],
         )
 
